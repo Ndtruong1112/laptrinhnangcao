@@ -1,0 +1,34 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bai1", "Bai1\Bai1.csproj", "{2F711F7C-00E7-4641-A120-9F74E0892738}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bai2_QuanLySinhVien", "Bai2_QuanLySinhVien\Bai2_QuanLySinhVien.csproj", "{A5A24F71-A393-4A3B-BF98-4A32F178F9CC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bai3_Calculator", "Bai3_Calculator\Bai3_Calculator.csproj", "{C1DD6B23-5725-477A-BFE7-84240371CFE1}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{2F711F7C-00E7-4641-A120-9F74E0892738}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2F711F7C-00E7-4641-A120-9F74E0892738}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2F711F7C-00E7-4641-A120-9F74E0892738}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2F711F7C-00E7-4641-A120-9F74E0892738}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A5A24F71-A393-4A3B-BF98-4A32F178F9CC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A5A24F71-A393-4A3B-BF98-4A32F178F9CC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A5A24F71-A393-4A3B-BF98-4A32F178F9CC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A5A24F71-A393-4A3B-BF98-4A32F178F9CC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C1DD6B23-5725-477A-BFE7-84240371CFE1}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C1DD6B23-5725-477A-BFE7-84240371CFE1}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C1DD6B23-5725-477A-BFE7-84240371CFE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C1DD6B23-5725-477A-BFE7-84240371CFE1}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal

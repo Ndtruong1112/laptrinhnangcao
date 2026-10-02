@@ -33,8 +33,4 @@ while (true)
     Console.WriteLine("nhap sai, nhap lai");
 }
 
-
-
 Console.WriteLine($"a+b+c={a + b + c}");
-
-
