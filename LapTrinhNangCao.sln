@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bai2_QuanLySinhVien", "Bai2
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bai3_Calculator", "Bai3_Calculator\Bai3_Calculator.csproj", "{C1DD6B23-5725-477A-BFE7-84240371CFE1}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Bai4_QuanLySinhVien_WinForms", "Bai4_QuanLySinhVien_WinForms\Bai4_QuanLySinhVien_WinForms.csproj", "{C33B21EB-C08E-4D10-B5A4-18E32D95ED3B}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -30,5 +32,9 @@ Global
 		{C1DD6B23-5725-477A-BFE7-84240371CFE1}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C1DD6B23-5725-477A-BFE7-84240371CFE1}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C1DD6B23-5725-477A-BFE7-84240371CFE1}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C33B21EB-C08E-4D10-B5A4-18E32D95ED3B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C33B21EB-C08E-4D10-B5A4-18E32D95ED3B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C33B21EB-C08E-4D10-B5A4-18E32D95ED3B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C33B21EB-C08E-4D10-B5A4-18E32D95ED3B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
