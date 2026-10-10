@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace Bai4_QuanLySinhVien_WinForms.Models
+namespace Bai4_QuanLySinhVien_WinForms.Data.Entity
 {
     public class LopHoc
     {

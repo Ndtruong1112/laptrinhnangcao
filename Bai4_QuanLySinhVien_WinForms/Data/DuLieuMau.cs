@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Bai4_QuanLySinhVien_WinForms.Models;
+using Bai4_QuanLySinhVien_WinForms.Data.Entity;
 
 namespace Bai4_QuanLySinhVien_WinForms.Data
 {
