@@ -27,6 +27,12 @@ namespace QuanLySinhVien.Data.Entity
         [RegularExpression(@"^0\d{9}$", ErrorMessage = "Số điện thoại phải gồm 10 chữ số và bắt đầu bằng số 0.")]
         public string DienThoai { get; set; } = string.Empty;
 
+        public string SoDienThoai
+        {
+            get => DienThoai;
+            set => DienThoai = value;
+        }
+
         [Required(ErrorMessage = "Điểm số bắt buộc phải nhập.")]
         [Range(0.0, 10.0, ErrorMessage = "Điểm số phải nằm trong khoảng từ 0.0 đến 10.0.")]
         public double Diem { get; set; } = 0.0;

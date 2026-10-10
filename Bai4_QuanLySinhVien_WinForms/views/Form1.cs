@@ -21,7 +21,11 @@ namespace Bai4_QuanLySinhVien_WinForms
         private readonly LopBus lopBus = new();
         private List<SinhVien> danhSachSinhVien = new();
 
-        // ErrorProvider dùng để báo lỗi trực tiếp trên từng điều khiển khi nhập/sửa
+        // ErrorProvider theo mẫu của cô giáo (errPMaSV, erpHoten, erpEmail, erpDienThoai)
+        private readonly ErrorProvider errPMaSV = new();
+        private readonly ErrorProvider erpHoten = new();
+        private readonly ErrorProvider erpEmail = new();
+        private readonly ErrorProvider erpDienThoai = new();
         private readonly ErrorProvider errorProvider = new();
 
         // Biến cờ ngăn sự kiện chọn dòng đè lên khi đang thao tác nhập
@@ -38,13 +42,17 @@ namespace Bai4_QuanLySinhVien_WinForms
             this.Load += Form1_Load;
 
             // Cấu hình ErrorProvider
+            errPMaSV.BlinkStyle = ErrorBlinkStyle.NeverBlink;
+            erpHoten.BlinkStyle = ErrorBlinkStyle.NeverBlink;
+            erpEmail.BlinkStyle = ErrorBlinkStyle.NeverBlink;
+            erpDienThoai.BlinkStyle = ErrorBlinkStyle.NeverBlink;
             errorProvider.BlinkStyle = ErrorBlinkStyle.NeverBlink;
 
-            // Xóa lỗi của ErrorProvider ngay khi người dùng bắt đầu chỉnh sửa lại ô đó
-            this.txtMaSV.TextChanged += (s, e) => errorProvider.SetError(txtMaSV, "");
-            this.txtHoTen.TextChanged += (s, e) => errorProvider.SetError(txtHoTen, "");
-            this.txtEmail.TextChanged += (s, e) => errorProvider.SetError(txtEmail, "");
-            this.txtDienThoai.TextChanged += (s, e) => errorProvider.SetError(txtDienThoai, "");
+            // Xóa lỗi ngay khi người dùng bắt đầu nhập lại vào ô tương ứng
+            this.txtMaSV.TextChanged += (s, e) => errPMaSV.SetError(txtMaSV, "");
+            this.txtHoTen.TextChanged += (s, e) => erpHoten.SetError(txtHoTen, "");
+            this.txtEmail.TextChanged += (s, e) => erpEmail.SetError(txtEmail, "");
+            this.txtDienThoai.TextChanged += (s, e) => erpDienThoai.SetError(txtDienThoai, "");
             this.nudDiem.ValueChanged += (s, e) => errorProvider.SetError(nudDiem, "");
             this.cboLop.SelectedIndexChanged += (s, e) => errorProvider.SetError(cboLop, "");
 
@@ -172,10 +180,10 @@ namespace Bai4_QuanLySinhVien_WinForms
 
         #region --- 3. CÁC NÚT THAO TÁC (THÊM, SỬA, XÓA, LÀM MỚI VỚI ERRORPROVIDER) ---
 
-        // THÊM SINH VIÊN (DÙNG ERRORPROVIDER BÁO LỖI)
+        // THÊM SINH VIÊN (DÙNG ERRORPROVIDER BÁO LỖI THEO MẪU CÔ GIÁO)
         private void BtnThem_Click(object? sender, EventArgs e)
         {
-            errorProvider.Clear();
+            XoaTatCaLoi();
 
             // 1. Lấy dữ liệu từ giao diện
             string maLop = cboLop.SelectedValue?.ToString() ?? "";
@@ -186,7 +194,7 @@ namespace Bai4_QuanLySinhVien_WinForms
                 NgaySinh = dtpNgaySinh.Value,
                 GioiTinh = rbNam.Checked,
                 Email = txtEmail.Text.Trim(),
-                DienThoai = txtDienThoai.Text.Trim(),
+                SoDienThoai = txtDienThoai.Text.Trim(),
                 Diem = (double)nudDiem.Value,
                 MaLop = maLop,
                 TrangThai = cboTrangThai.SelectedItem?.ToString() ?? "Đang học"
@@ -203,7 +211,7 @@ namespace Bai4_QuanLySinhVien_WinForms
             // Kiểm tra trùng mã
             if (svBUL.GetSinhVienById(sv.MaSV) != null)
             {
-                errorProvider.SetError(txtMaSV, "Mã sinh viên đã tồn tại trong hệ thống!");
+                errPMaSV.SetError(txtMaSV, "Mã sinh viên đã tồn tại trong hệ thống!");
                 txtMaSV.Focus();
                 return;
             }
@@ -226,7 +234,7 @@ namespace Bai4_QuanLySinhVien_WinForms
         // SỬA SINH VIÊN (DÙNG ERRORPROVIDER BÁO LỖI)
         private void BtnSua_Click(object? sender, EventArgs e)
         {
-            errorProvider.Clear();
+            XoaTatCaLoi();
 
             // 1. Lấy dữ liệu từ giao diện
             string maLopMoi = cboLop.SelectedValue?.ToString() ?? "";
@@ -237,7 +245,7 @@ namespace Bai4_QuanLySinhVien_WinForms
                 NgaySinh = dtpNgaySinh.Value,
                 GioiTinh = rbNam.Checked,
                 Email = txtEmail.Text.Trim(),
-                DienThoai = txtDienThoai.Text.Trim(),
+                SoDienThoai = txtDienThoai.Text.Trim(),
                 Diem = (double)nudDiem.Value,
                 MaLop = maLopMoi,
                 TrangThai = cboTrangThai.SelectedItem?.ToString() ?? "Đang học"
@@ -268,7 +276,7 @@ namespace Bai4_QuanLySinhVien_WinForms
         // XÓA SINH VIÊN (CHỨC NĂNG NGUY HIỂM -> XÁC THỰC TRƯỚC KHI THỰC HIỆN)
         private void BtnXoa_Click(object? sender, EventArgs e)
         {
-            errorProvider.Clear();
+            XoaTatCaLoi();
 
             string maSV = txtMaSV.Text.Trim();
             var sv = svBUL.GetSinhVienById(maSV);
@@ -307,7 +315,7 @@ namespace Bai4_QuanLySinhVien_WinForms
         // LÀM MỚI FORM
         private void BtnLamMoi_Click(object? sender, EventArgs e)
         {
-            errorProvider.Clear();
+            XoaTatCaLoi();
             isBindingData = true;
 
             txtMaSV.Clear();
@@ -394,37 +402,70 @@ namespace Bai4_QuanLySinhVien_WinForms
 
         #region --- 5. HÀM TIỆN ÍCH HIỂN THỊ LỖI VÀ GIAO DIỆN ---
 
-        // Hiển thị lỗi qua ErrorProvider cho từng điều khiển cụ thể
+        private void XoaTatCaLoi()
+        {
+            errPMaSV.Clear();
+            erpHoten.Clear();
+            erpEmail.Clear();
+            erpDienThoai.Clear();
+            errorProvider.Clear();
+        }
+
+        // Hiển thị lỗi qua ErrorProvider theo đúng mẫu cô giáo (switch-case theo tên trường)
         private void HienThiLoiErrorProvider(List<ValidationResult> errors)
         {
-            errorProvider.Clear();
+            XoaTatCaLoi();
             Control? firstErrorControl = null;
 
-            foreach (var vr in errors)
+            // Hiển thị thông báo lỗi tương ứng với từng trường
+            foreach (var error in errors)
             {
-                string msg = vr.ErrorMessage ?? "Thông tin không hợp lệ";
-                foreach (var member in vr.MemberNames)
+                if (error.MemberNames != null && error.MemberNames.Any())
                 {
-                    Control? targetControl = member switch
+                    string fieldName = error.MemberNames.First();
+                    switch (fieldName)
                     {
-                        nameof(SinhVien.MaSV) => txtMaSV,
-                        nameof(SinhVien.HoTen) => txtHoTen,
-                        nameof(SinhVien.Email) => txtEmail,
-                        nameof(SinhVien.DienThoai) => txtDienThoai,
-                        nameof(SinhVien.Diem) => nudDiem,
-                        nameof(SinhVien.MaLop) => cboLop,
-                        _ => null
-                    };
-
-                    if (targetControl != null)
-                    {
-                        errorProvider.SetError(targetControl, msg);
-                        firstErrorControl ??= targetControl;
+                        case "MaSV":
+                            errPMaSV.SetError(txtMaSV, error.ErrorMessage);
+                            firstErrorControl ??= txtMaSV;
+                            break;
+                        case "HoTen":
+                            erpHoten.SetError(txtHoTen, error.ErrorMessage);
+                            firstErrorControl ??= txtHoTen;
+                            break;
+                        case "Email":
+                            erpEmail.SetError(txtEmail, error.ErrorMessage);
+                            firstErrorControl ??= txtEmail;
+                            break;
+                        case "SoDienThoai":
+                        case "DienThoai":
+                            erpDienThoai.SetError(txtDienThoai, error.ErrorMessage);
+                            firstErrorControl ??= txtDienThoai;
+                            break;
+                        case "Diem":
+                            errorProvider.SetError(nudDiem, error.ErrorMessage);
+                            firstErrorControl ??= nudDiem;
+                            break;
+                        case "MaLop":
+                            errorProvider.SetError(cboLop, error.ErrorMessage);
+                            firstErrorControl ??= cboLop;
+                            break;
+                        default:
+                            MessageBox.Show(error.ErrorMessage, "Lỗi dữ liệu", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                            break;
                     }
+                }
+                else
+                {
+                    MessageBox.Show(error.ErrorMessage, "Lỗi dữ liệu", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
 
             firstErrorControl?.Focus();
+
+            // Hiển thị hộp thoại tổng hợp tất cả lỗi 1 lần duy nhất (đặt ngoài vòng lặp foreach để không hiện lặp hộp thoại)
+            string errorMessage = string.Join("\n", errors.Select(err => err.ErrorMessage));
+            MessageBox.Show(errorMessage, "Lỗi dữ liệu", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
 
         private void HienThiDanhSachLenGrid(List<SinhVien> danhSach)
