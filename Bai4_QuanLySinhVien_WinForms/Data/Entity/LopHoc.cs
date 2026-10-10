@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace Bai4_QuanLySinhVien_WinForms.Data.Entity
+namespace QuanLySinhVien.Data.Entity
 {
     public class LopHoc
     {
@@ -24,15 +24,19 @@ namespace Bai4_QuanLySinhVien_WinForms.Data.Entity
             TenLop = tenLop;
         }
 
-        // Phương thức kiểm tra hợp lệ của đối tượng dùng Data Annotations
+        public List<ValidationResult> IsInValid()
+        {
+            var context = new ValidationContext(this);
+            var results = new List<ValidationResult>();
+            Validator.TryValidateObject(this, context, results, validateAllProperties: true);
+            return results;
+        }
+
         public bool IsValid(out List<string> errors)
         {
             errors = new List<string>();
-            var context = new ValidationContext(this);
-            var results = new List<ValidationResult>();
-
-            bool isValid = Validator.TryValidateObject(this, context, results, validateAllProperties: true);
-            if (!isValid)
+            var results = IsInValid();
+            if (results.Count > 0)
             {
                 foreach (var r in results)
                 {
@@ -41,8 +45,9 @@ namespace Bai4_QuanLySinhVien_WinForms.Data.Entity
                         errors.Add(r.ErrorMessage);
                     }
                 }
+                return false;
             }
-            return isValid;
+            return true;
         }
 
         public override string ToString() => TenLop;

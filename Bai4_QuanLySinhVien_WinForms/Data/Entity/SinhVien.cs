@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace Bai4_QuanLySinhVien_WinForms.Data.Entity
+namespace QuanLySinhVien.Data.Entity
 {
     public class SinhVien
     {
@@ -54,15 +54,21 @@ namespace Bai4_QuanLySinhVien_WinForms.Data.Entity
             TrangThai = trangThai;
         }
 
-        // Phương thức kiểm tra tính hợp lệ của đối tượng theo Data Annotations
+        // Phương thức kiểm tra tính không hợp lệ theo mẫu bài học: IsInValid().Count > 0
+        public List<ValidationResult> IsInValid()
+        {
+            var context = new ValidationContext(this);
+            var results = new List<ValidationResult>();
+            Validator.TryValidateObject(this, context, results, validateAllProperties: true);
+            return results;
+        }
+
+        // Phương thức kiểm tra tính hợp lệ trả về danh sách chuỗi lỗi
         public bool IsValid(out List<string> errors)
         {
             errors = new List<string>();
-            var context = new ValidationContext(this);
-            var results = new List<ValidationResult>();
-
-            bool isValid = Validator.TryValidateObject(this, context, results, validateAllProperties: true);
-            if (!isValid)
+            var results = IsInValid();
+            if (results.Count > 0)
             {
                 foreach (var r in results)
                 {
@@ -71,8 +77,9 @@ namespace Bai4_QuanLySinhVien_WinForms.Data.Entity
                         errors.Add(r.ErrorMessage);
                     }
                 }
+                return false;
             }
-            return isValid;
+            return true;
         }
     }
 }

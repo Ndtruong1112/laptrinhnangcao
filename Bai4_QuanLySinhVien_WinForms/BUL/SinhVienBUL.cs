@@ -1,99 +1,73 @@
+using System;
 using System.Collections.Generic;
-using Bai4_QuanLySinhVien_WinForms.Data.DAO;
-using Bai4_QuanLySinhVien_WinForms.Data.Entity;
+using System.Text;
+using QuanLySinhVien.Data.DAL;
+using QuanLySinhVien.Data.Entity;
 
-namespace Bai4_QuanLySinhVien_WinForms.BUL
+namespace QuanLySinhVien.BUL
 {
-    /// <summary>
-    /// Tầng Business (BUL / BUS): Thực hiện các nghiệp vụ yêu cầu liên quan đến Sinh viên
-    /// </summary>
     public class SinhVienBUL
     {
-        private readonly SinhVienDAO _sinhVienDAO = new();
-        private readonly LopHocDAO _lopHocDAO = new();
+        private SinhVienDAL svd;
 
-        // 1. Lấy tất cả sinh viên
-        public List<SinhVien> LayTatCa()
+        public SinhVienBUL()
         {
-            return _sinhVienDAO.GetAll();
+            svd = new SinhVienDAL();
         }
 
-        // 2. Tìm kiếm sinh viên theo mã
-        public SinhVien? TimTheoMa(string maSV)
+        public List<SinhVien> GetAllSinhVien()
         {
-            return _sinhVienDAO.GetById(maSV);
+            return svd.GetAllSinhVien();
         }
 
-        // 3. Nghiệp vụ Thêm: Kiểm tra Data Annotations + Kiểm tra trùng mã
-        public (bool Success, List<string> Errors) ThemSinhVien(SinhVien sv)
+        public SinhVien? GetSinhVienById(string maSV)
         {
-            var errors = new List<string>();
-
-            // Kiểm tra Data Annotations
-            if (!sv.IsValid(out errors))
-            {
-                return (false, errors);
-            }
-
-            // Nghiệp vụ: Mã sinh viên không được trùng
-            if (_sinhVienDAO.GetById(sv.MaSV) != null)
-            {
-                errors.Add($"Mã sinh viên '{sv.MaSV}' đã tồn tại trong hệ thống.");
-                return (false, errors);
-            }
-
-            // Nghiệp vụ: Lớp học phải tồn tại
-            var lop = _lopHocDAO.GetById(sv.MaLop);
-            if (lop == null)
-            {
-                errors.Add("Lớp học đã chọn không tồn tại trong hệ thống.");
-                return (false, errors);
-            }
-
-            bool success = _sinhVienDAO.Add(sv);
-            return (success, errors);
+            return svd.GetSinhVienById(maSV);
         }
 
-        // 4. Nghiệp vụ Sửa: Kiểm tra Data Annotations + cập nhật
-        public (bool Success, List<string> Errors) SuaSinhVien(SinhVien sv)
+        public void AddSinhVien(SinhVien sv)
         {
-            var errors = new List<string>();
-
-            // Kiểm tra Data Annotations
-            if (!sv.IsValid(out errors))
+            if (sv.IsInValid().Count > 0)
             {
-                return (false, errors);
+                throw new Exception("Sinh viên không hợp lệ");
             }
 
-            // Kiểm tra sinh viên có tồn tại không
-            var svCu = _sinhVienDAO.GetById(sv.MaSV);
-            if (svCu == null)
+            var s = svd.GetSinhVienById(sv.MaSV);
+            if (s != null)
             {
-                errors.Add("Không tìm thấy sinh viên cần cập nhật thông tin.");
-                return (false, errors);
+                throw new Exception("Mã sinh viên đã tồn tại");
             }
 
-            // Kiểm tra lớp học mới có tồn tại không
-            if (_lopHocDAO.GetById(sv.MaLop) == null)
-            {
-                errors.Add("Lớp học đã chọn không hợp lệ.");
-                return (false, errors);
-            }
-
-            bool success = _sinhVienDAO.Update(sv);
-            return (success, errors);
+            // Thêm sinh viên vào cơ sở dữ liệu
+            svd.AddSinhVien(sv);
         }
 
-        // 5. Nghiệp vụ Xóa
-        public bool XoaSinhVien(string maSV)
+        public void UpdateSinhVien(SinhVien sv)
         {
-            return _sinhVienDAO.Delete(maSV);
+            if (sv.IsInValid().Count > 0)
+            {
+                throw new Exception("Sinh viên không hợp lệ");
+            }
+
+            bool ok = svd.UpdateSinhVien(sv);
+            if (!ok)
+            {
+                throw new Exception("Không tìm thấy sinh viên để cập nhật");
+            }
         }
 
-        // 6. Nghiệp vụ Tìm kiếm và Lọc
-        public List<SinhVien> TimKiemVaLoc(string tuKhoa, string maLop, double diemTu)
+        public void DeleteSinhVien(string maSV)
         {
-            return _sinhVienDAO.Search(tuKhoa, maLop, diemTu);
+            bool ok = svd.DeleteSinhVien(maSV);
+            if (!ok)
+            {
+                throw new Exception("Không tìm thấy sinh viên để xóa");
+            }
+        }
+
+        public List<SinhVien> Search(string tuKhoa, string maLop, double diemTu)
+        {
+            return svd.Search(tuKhoa, maLop, diemTu);
         }
     }
 }

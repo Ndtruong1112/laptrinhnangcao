@@ -4,20 +4,20 @@ using System.Drawing;
 using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Windows.Forms;
-using Bai4_QuanLySinhVien_WinForms.BUL;
-using Bai4_QuanLySinhVien_WinForms.Data.Entity;
+using QuanLySinhVien.BUL;
+using QuanLySinhVien.Data.Entity;
 
 namespace Bai4_QuanLySinhVien_WinForms
 {
     /// <summary>
     /// Tầng Presentation Layer (GUI): Chỉ giữ lại phần xử lý về giao diện,
-    /// tiếp nhận tương tác người dùng và gọi xuống tầng Business (BUL).
+    /// tiếp nhận tương tác người dùng và gọi xuống tầng Business (BUL: SinhVienBUL, LopBus).
     /// </summary>
     public partial class Form1 : Form
     {
-        // Giao diện làm việc trực tiếp với tầng Business (BUL)
-        private readonly SinhVienBUL _sinhVienBUL = new();
-        private readonly LopHocBUL _lopHocBUL = new();
+        // Giao diện làm việc trực tiếp với tầng Business (BUL) theo mẫu của giáo viên
+        private readonly SinhVienBUL svBUL = new();
+        private readonly LopBus lopBus = new();
 
         // Biến cờ ngăn sự kiện chọn dòng đè lên khi đang thao tác nhập
         private bool isBindingData = false;
@@ -57,8 +57,8 @@ namespace Bai4_QuanLySinhVien_WinForms
 
         private void Form1_Load(object? sender, EventArgs e)
         {
-            // 1. Nạp danh sách lớp học thông qua tầng Business (BUL)
-            var dsLop = _lopHocBUL.LayDanhSachLop();
+            // 1. Nạp danh sách lớp học thông qua tầng Business (LopBus)
+            var dsLop = lopBus.GetAllLopHoc();
 
             // 2. Nạp dữ liệu vào ComboBox Lớp học
             cboLop.DataSource = dsLop.ToList();
@@ -76,8 +76,8 @@ namespace Bai4_QuanLySinhVien_WinForms
             // 4. Mặc định trạng thái
             cboTrangThai.SelectedIndex = 0;
 
-            // 5. Nạp danh sách sinh viên lên DataGridView thông qua BUL
-            HienThiDanhSachLenGrid(_sinhVienBUL.LayTatCa());
+            // 5. Nạp danh sách sinh viên lên DataGridView thông qua SinhVienBUL
+            HienThiDanhSachLenGrid(svBUL.GetAllSinhVien());
 
             // 6. Thiết lập trạng thái các button theo yêu cầu đề bài:
             // Enable Thêm, Disable Sửa, Xóa, Enable Làm mới
@@ -118,8 +118,8 @@ namespace Bai4_QuanLySinhVien_WinForms
                 return;
             }
 
-            // Gọi qua BUL để kiểm tra xem sinh viên có tồn tại hay không
-            var sv = _sinhVienBUL.TimTheoMa(maSV);
+            // Gọi qua SinhVienBUL để kiểm tra xem sinh viên có tồn tại hay không
+            var sv = svBUL.GetSinhVienById(maSV);
             if (sv != null)
             {
                 // Nếu mã sinh viên tồn tại:
@@ -164,22 +164,27 @@ namespace Bai4_QuanLySinhVien_WinForms
                 TrangThai = cboTrangThai.SelectedItem?.ToString() ?? "Đang học"
             };
 
-            // 2. Chuyển xuống tầng Business (BUL) xử lý kiểm tra nghiệp vụ và thêm vào nguồn dữ liệu
-            var result = _sinhVienBUL.ThemSinhVien(sv);
-
-            // 3. Phản hồi giao diện
-            if (!result.Success)
+            // 2. Chuyển xuống tầng Business (SinhVienBUL) xử lý kiểm tra nghiệp vụ và lưu
+            try
             {
-                string thongBaoLoi = string.Join("\n• ", result.Errors);
-                MessageBox.Show("Thông tin sinh viên chưa hợp lệ:\n• " + thongBaoLoi, "Kiểm tra dữ liệu (Validation)", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
+                svBUL.AddSinhVien(sv);
+                HienThiDanhSachLenGrid(svBUL.GetAllSinhVien());
+                MessageBox.Show("Thêm mới sinh viên thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                KiemTraMaSinhVien();
             }
-
-            HienThiDanhSachLenGrid(_sinhVienBUL.LayTatCa());
-            MessageBox.Show("Thêm mới sinh viên thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
-
-            // Cập nhật lại trạng thái các nút
-            KiemTraMaSinhVien();
+            catch (Exception ex)
+            {
+                var errors = sv.IsInValid();
+                if (errors.Count > 0)
+                {
+                    string thongBaoLoi = string.Join("\n• ", errors.Select(err => err.ErrorMessage));
+                    MessageBox.Show("Thông tin sinh viên chưa hợp lệ:\n• " + thongBaoLoi, "Kiểm tra dữ liệu (Validation)", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                else
+                {
+                    MessageBox.Show(ex.Message, "Thông báo lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
         }
 
         // SỬA SINH VIÊN
@@ -200,26 +205,33 @@ namespace Bai4_QuanLySinhVien_WinForms
                 TrangThai = cboTrangThai.SelectedItem?.ToString() ?? "Đang học"
             };
 
-            // 2. Gọi tầng Business (BUL) xử lý nghiệp vụ sửa
-            var result = _sinhVienBUL.SuaSinhVien(sv);
-
-            // 3. Phản hồi giao diện
-            if (!result.Success)
+            // 2. Gọi tầng Business (SinhVienBUL) xử lý nghiệp vụ sửa
+            try
             {
-                string thongBaoLoi = string.Join("\n• ", result.Errors);
-                MessageBox.Show("Thông tin sinh viên chưa hợp lệ:\n• " + thongBaoLoi, "Kiểm tra dữ liệu (Validation)", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
+                svBUL.UpdateSinhVien(sv);
+                HienThiDanhSachLenGrid(svBUL.GetAllSinhVien());
+                MessageBox.Show("Cập nhật thông tin sinh viên thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
-
-            HienThiDanhSachLenGrid(_sinhVienBUL.LayTatCa());
-            MessageBox.Show("Cập nhật thông tin sinh viên thành công!", "Thành công", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            catch (Exception ex)
+            {
+                var errors = sv.IsInValid();
+                if (errors.Count > 0)
+                {
+                    string thongBaoLoi = string.Join("\n• ", errors.Select(err => err.ErrorMessage));
+                    MessageBox.Show("Thông tin sinh viên chưa hợp lệ:\n• " + thongBaoLoi, "Kiểm tra dữ liệu (Validation)", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
+                else
+                {
+                    MessageBox.Show(ex.Message, "Thông báo lỗi", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
         }
 
         // XÓA SINH VIÊN (CHỨC NĂNG NGUY HIỂM -> XÁC THỰC TRƯỚC KHI THỰC HIỆN)
         private void BtnXoa_Click(object? sender, EventArgs e)
         {
             string maSV = txtMaSV.Text.Trim();
-            var sv = _sinhVienBUL.TimTheoMa(maSV);
+            var sv = svBUL.GetSinhVienById(maSV);
             if (sv == null)
             {
                 MessageBox.Show("Không tìm thấy sinh viên để xóa!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Warning);
@@ -237,17 +249,16 @@ namespace Bai4_QuanLySinhVien_WinForms
 
             if (confirmResult == DialogResult.Yes)
             {
-                // Gọi tầng Business (BUL) thực hiện xóa
-                bool success = _sinhVienBUL.XoaSinhVien(maSV);
-                if (success)
+                try
                 {
-                    HienThiDanhSachLenGrid(_sinhVienBUL.LayTatCa());
+                    svBUL.DeleteSinhVien(maSV);
+                    HienThiDanhSachLenGrid(svBUL.GetAllSinhVien());
                     BtnLamMoi_Click(sender, e);
                     MessageBox.Show("Đã xóa sinh viên khỏi hệ thống thành công!", "Thông báo", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 }
-                else
+                catch (Exception ex)
                 {
-                    MessageBox.Show("Xóa sinh viên không thành công!", "Lỗi", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    MessageBox.Show(ex.Message, "Lỗi xóa sinh viên", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
@@ -255,10 +266,6 @@ namespace Bai4_QuanLySinhVien_WinForms
         // LÀM MỚI FORM
         private void BtnLamMoi_Click(object? sender, EventArgs e)
         {
-            // YÊU CẦU ĐỀ BÀI: Khi người dùng nhấn Button Làm mới:
-            // - Xóa trống các thuộc tính trên form
-            // - Enable button Nhập, Disable button sửa xóa
-            // - Chuyển tiêu điểm về điều khiển txtMaSV
             isBindingData = true;
 
             txtMaSV.Clear();
@@ -292,8 +299,8 @@ namespace Bai4_QuanLySinhVien_WinForms
             string maLopLoc = cboLocLop.SelectedValue?.ToString() ?? "";
             double diemTu = (double)nudDiemTu.Value;
 
-            // Gọi qua BUL để tìm kiếm và lọc dữ liệu
-            var ketQua = _sinhVienBUL.TimKiemVaLoc(tuKhoa, maLopLoc, diemTu);
+            // Gọi qua SinhVienBUL để tìm kiếm và lọc dữ liệu
+            var ketQua = svBUL.Search(tuKhoa, maLopLoc, diemTu);
             HienThiDanhSachLenGrid(ketQua);
         }
 
@@ -302,7 +309,7 @@ namespace Bai4_QuanLySinhVien_WinForms
             txtTimKiem.Clear();
             cboLocLop.SelectedIndex = 0;
             nudDiemTu.Value = 0.0m;
-            HienThiDanhSachLenGrid(_sinhVienBUL.LayTatCa());
+            HienThiDanhSachLenGrid(svBUL.GetAllSinhVien());
         }
 
         #endregion
@@ -335,7 +342,7 @@ namespace Bai4_QuanLySinhVien_WinForms
             string? maSV = dgvSinhVien.Rows[e.RowIndex].Cells["colMaSV"].Value?.ToString();
             if (!string.IsNullOrEmpty(maSV))
             {
-                var sv = _sinhVienBUL.TimTheoMa(maSV);
+                var sv = svBUL.GetSinhVienById(maSV);
                 if (sv != null)
                 {
                     HienThiThongTinLenControls(sv, giuNguyenMaSV: false);
@@ -462,6 +469,7 @@ namespace Bai4_QuanLySinhVien_WinForms
             path.CloseFigure();
             return path;
         }
+
         private void nudDiem_ValueChanged(object? sender, EventArgs e) { }
         private void txtHoTen_TextChanged(object? sender, EventArgs e) { }
 
