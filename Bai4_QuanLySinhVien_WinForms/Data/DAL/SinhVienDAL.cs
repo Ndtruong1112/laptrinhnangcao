@@ -109,5 +109,11 @@ namespace QuanLySinhVien.Data.DAL
                 return matchTuKhoa && matchLop && matchDiem;
             }).ToList();
         }
+
+        public List<SinhVien> GetSinhVienByLop(string maLop)
+        {
+            if (string.IsNullOrEmpty(maLop)) return GetAllSinhVien();
+            return sinhViens.Where(s => s.MaLop.Equals(maLop, StringComparison.OrdinalIgnoreCase)).ToList();
+        }
     }
 }

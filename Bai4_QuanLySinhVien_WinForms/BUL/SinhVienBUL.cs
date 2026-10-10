@@ -69,5 +69,10 @@ namespace QuanLySinhVien.BUL
         {
             return svd.Search(tuKhoa, maLop, diemTu);
         }
+
+        public List<SinhVien> GetSinhVienByLop(string maLop)
+        {
+            return svd.GetSinhVienByLop(maLop);
+        }
     }
 }
