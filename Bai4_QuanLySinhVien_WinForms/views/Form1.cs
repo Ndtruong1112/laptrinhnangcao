@@ -92,28 +92,37 @@ namespace Bai4_QuanLySinhVien_WinForms
 
         private void Form1_Load(object? sender, EventArgs e)
         {
-            // 1. Nạp danh sách lớp học thông qua tầng Business (LopBus)
-            var dsLop = lopBus.GetAllLopHoc();
+            try
+            {
+                // 1. Nạp danh sách lớp học thông qua tầng Business (LopBus -> LopHocDAO / ADO.NET)
+                var dsLop = lopBus.GetAllLopHoc();
 
-            // 2. Nạp dữ liệu vào ComboBox Lớp học
-            cboLop.DataSource = dsLop.ToList();
-            cboLop.DisplayMember = "TenLop";
-            cboLop.ValueMember = "MaLop";
+                // 2. Nạp dữ liệu vào ComboBox Lớp học
+                cboLop.DataSource = dsLop.ToList();
+                cboLop.DisplayMember = "TenLop";
+                cboLop.ValueMember = "MaLop";
 
-            // 3. Nạp dữ liệu vào ComboBox Lọc lớp
-            var dsLocLop = new List<LopItem> { new LopItem { MaLop = "", TenLop = "Tất cả lớp" } };
-            dsLocLop.AddRange(dsLop.Select(l => new LopItem { MaLop = l.MaLop, TenLop = l.TenLop }));
-            cboLocLop.DataSource = dsLocLop;
-            cboLocLop.DisplayMember = "TenLop";
-            cboLocLop.ValueMember = "MaLop";
-            cboLocLop.SelectedIndex = 0;
+                // 3. Nạp dữ liệu vào ComboBox Lọc lớp
+                var dsLocLop = new List<LopItem> { new LopItem { MaLop = "", TenLop = "Tất cả lớp" } };
+                dsLocLop.AddRange(dsLop.Select(l => new LopItem { MaLop = l.MaLop, TenLop = l.TenLop }));
+                cboLocLop.DataSource = dsLocLop;
+                cboLocLop.DisplayMember = "TenLop";
+                cboLocLop.ValueMember = "MaLop";
+                cboLocLop.SelectedIndex = 0;
 
-            // 4. Mặc định trạng thái
-            cboTrangThai.SelectedIndex = 0;
+                // 4. Mặc định trạng thái
+                cboTrangThai.SelectedIndex = 0;
 
-            // 5. Nạp danh sách sinh viên lên DataGridView thông qua SinhVienBUL
-            TaiLaiDanhSachSinhVien();
-            HienThiDanhSachLenGrid(danhSachSinhVien);
+                // 5. Nạp danh sách sinh viên lên DataGridView thông qua SinhVienBUL (ADO.NET)
+                TaiLaiDanhSachSinhVien();
+                HienThiDanhSachLenGrid(danhSachSinhVien);
+            }
+            catch (Exception ex)
+            {
+                // Tầng View xử lý ngoại lệ theo đúng yêu cầu đề bài
+                MessageBox.Show($"Lỗi kết nối cơ sở dữ liệu khi khởi động:\n{ex.Message}\n\n(Lưu ý: Vui lòng chạy file Database_QLSV.sql trong SQL Server để tạo cơ sở dữ liệu QLSV)", 
+                    "Lỗi Cơ Sở Dữ Liệu", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
 
             // 6. Thiết lập trạng thái các button theo yêu cầu đề bài:
             // Enable Thêm, Disable Sửa, Xóa, Enable Làm mới
@@ -154,9 +163,21 @@ namespace Bai4_QuanLySinhVien_WinForms
                 return;
             }
 
-            // Tìm kiếm sinh viên theo mã
+            // Tìm kiếm sinh viên theo mã (từ danh sách đang hiển thị hoặc truy vấn CSDL)
             var sv = danhSachSinhVien.FirstOrDefault(s =>
                 s.MaSV.Equals(maSV, StringComparison.OrdinalIgnoreCase));
+
+            if (sv == null)
+            {
+                try
+                {
+                    sv = svBUL.GetSinhVienById(maSV);
+                }
+                catch
+                {
+                    // Bỏ qua lỗi kết nối khi người dùng đang gõ dở
+                }
+            }
 
             if (sv != null)
             {
@@ -343,16 +364,23 @@ namespace Bai4_QuanLySinhVien_WinForms
 
         #region --- 4. TÌM KIẾM VÀ LỌC DỮ LIỆU (CƠ SỞ DỮ LIỆU & GIAO DIỆN) ---
 
-        // 1. TÌM KIẾM PHÍA CƠ SỞ DỮ LIỆU (Gọi qua BUL -> DAL Search)
+        // 1. TÌM KIẾM PHÍA CƠ SỞ DỮ LIỆU (Gọi qua BUL -> DAO Search ADO.NET)
         private void BtnTimKiem_Click(object? sender, EventArgs e)
         {
-            string tuKhoa = txtTimKiem.Text.Trim();
-            string maLopLoc = cboLocLop.SelectedValue?.ToString() ?? "";
-            double diemTu = (double)nudDiemTu.Value;
+            try
+            {
+                string tuKhoa = txtTimKiem.Text.Trim();
+                string maLopLoc = cboLocLop.SelectedValue?.ToString() ?? "";
+                double diemTu = (double)nudDiemTu.Value;
 
-            // Tìm kiếm phía cơ sở dữ liệu qua tầng Business
-            var ketQua = svBUL.Search(tuKhoa, maLopLoc, diemTu);
-            HienThiDanhSachLenGrid(ketQua);
+                // Tìm kiếm phía cơ sở dữ liệu qua tầng Business
+                var ketQua = svBUL.Search(tuKhoa, maLopLoc, diemTu);
+                HienThiDanhSachLenGrid(ketQua);
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi tìm kiếm từ CSDL: {ex.Message}", "Lỗi tìm kiếm", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         // 2. KHI CHỌN LỚP NÀO THÌ HIỂN THỊ SINH VIÊN CỦA LỚP ĐẤY (Lọc theo lớp)
@@ -372,7 +400,15 @@ namespace Bai4_QuanLySinhVien_WinForms
 
         private void TaiLaiDanhSachSinhVien()
         {
-            danhSachSinhVien = svBUL.GetAllSinhVien().ToList();
+            try
+            {
+                danhSachSinhVien = svBUL.GetAllSinhVien().ToList();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show($"Lỗi tải danh sách sinh viên từ CSDL:\n{ex.Message}", "Lỗi dữ liệu", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                danhSachSinhVien = new List<SinhVien>();
+            }
         }
 
         // Tìm kiếm và lọc trên giao diện
