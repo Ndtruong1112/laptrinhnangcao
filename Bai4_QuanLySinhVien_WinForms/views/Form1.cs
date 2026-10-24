@@ -6,6 +6,7 @@ using System.Drawing.Drawing2D;
 using System.Linq;
 using System.Windows.Forms;
 using QuanLySinhVien.BUL;
+using QuanLySinhVien.Data.Context;
 using QuanLySinhVien.Data.Entity;
 
 namespace Bai4_QuanLySinhVien_WinForms
@@ -94,7 +95,10 @@ namespace Bai4_QuanLySinhVien_WinForms
         {
             try
             {
-                // 1. Nạp danh sách lớp học thông qua tầng Business (LopBus -> LopHocDAO / ADO.NET)
+                // 0. Entity Framework Core Code First: Tự động khởi tạo và map các thực thể sang CSDL
+                QLSVDbContext.EnsureDatabaseCreated();
+
+                // 1. Nạp danh sách lớp học thông qua tầng Business (LopBus -> LopHocDAO / EF Core)
                 var dsLop = lopBus.GetAllLopHoc();
 
                 // 2. Nạp dữ liệu vào ComboBox Lớp học
